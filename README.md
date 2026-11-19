@@ -61,10 +61,12 @@ pip install -r requirements.txt
 python src/volforecast/data.py   # downloads data into data/
 ```
 
-Run the tests with:
+Run the tests and the linter/formatter with:
 
 ```bash
 pytest
+ruff check .     # lint
+ruff format .    # format
 ```
 
 The test suite currently contains only an import smoke test. CI runs it on
@@ -86,7 +88,7 @@ crossasset-vol/
 ├── tests/
 │   └── test_smoke.py       # placeholder import test
 ├── data/                   # Parquet files created by data.py (not tracked)
-├── pyproject.toml          # pytest configuration
+├── pyproject.toml          # pytest and ruff configuration
 ├── requirements.txt
 └── LICENSE
 ```
