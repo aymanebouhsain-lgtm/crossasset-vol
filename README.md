@@ -1,5 +1,7 @@
 # crossasset-vol
 
+[![tests](https://github.com/aymanebouhsain-lgtm/crossasset-vol/actions/workflows/tests.yml/badge.svg)](https://github.com/aymanebouhsain-lgtm/crossasset-vol/actions/workflows/tests.yml)
+
 Forecasting next-week realized volatility across five asset classes using daily
 OHLC (open, high, low, close) data. The project builds daily variance estimates
 from price ranges and returns, and will compare forecasting models for the
@@ -59,20 +61,32 @@ pip install -r requirements.txt
 python src/volforecast/data.py   # downloads data into data/
 ```
 
-The notebooks add `../src` to the import path, so start Jupyter from the
-repository root or the `notebooks/` folder.
+Run the tests with:
+
+```bash
+pytest
+```
+
+The test suite currently contains only an import smoke test. CI runs it on
+every push with Python 3.12.
 
 ## Repository structure
 
 ```
 crossasset-vol/
+├── .github/workflows/
+│   └── tests.yml           # CI: runs pytest on push
 ├── src/volforecast/
-│   ├── data.py           # download and load daily OHLCV data
-│   └── estimators.py     # daily variance estimators and annualization
+│   ├── __init__.py
+│   ├── data.py             # download and load daily OHLCV data
+│   └── estimators.py       # daily variance estimators and annualization
 ├── notebooks/
 │   ├── 01_explore.ipynb    # first look at the data
 │   └── 02_estimators.ipynb # comparing estimators on SPY
-├── data/                 # Parquet files created by data.py (not tracked)
+├── tests/
+│   └── test_smoke.py       # placeholder import test
+├── data/                   # Parquet files created by data.py (not tracked)
+├── pyproject.toml          # pytest configuration
 ├── requirements.txt
 └── LICENSE
 ```
