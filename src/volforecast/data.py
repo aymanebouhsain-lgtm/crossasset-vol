@@ -8,6 +8,10 @@ DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 
 
 def download(start="2007-01-01"):
+    """Download daily OHLCV data for all tickers since `start`.
+
+    Saves one Parquet file per ticker in data/.
+    """
     DATA_DIR.mkdir(exist_ok=True)
     for ticker in TICKERS:
         df = yf.download(ticker, start=start, auto_adjust=True, progress=False)
@@ -19,6 +23,7 @@ def download(start="2007-01-01"):
 
 
 def load(ticker):
+    """Load the saved daily OHLCV data for one ticker."""
     return pd.read_parquet(DATA_DIR / f"{ticker}.parquet")
 
 
