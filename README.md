@@ -2,11 +2,11 @@
 
 [![tests](https://github.com/aymanebouhsain-lgtm/crossasset-vol/actions/workflows/tests.yml/badge.svg)](https://github.com/aymanebouhsain-lgtm/crossasset-vol/actions/workflows/tests.yml)
 
-Forecasting next-week realized volatility across five asset classes using daily
+Forecasting next-week realized variance across five asset classes using daily
 OHLC (open, high, low, close) data. The project builds daily variance estimates
-from price ranges and returns, and will compare forecasting models for the
-average volatility over the following five trading days on five liquid ETFs:
-SPY, TLT, FXE, GLD and USO.
+from price ranges and returns, validates them by Monte Carlo, and compares
+forecasting models for the sum of daily variance over the next five trading
+days on five liquid ETFs: SPY, TLT, FXE, GLD and USO.
 
 ## Assets
 
@@ -44,6 +44,25 @@ adjusted for splits and dividends).
   the HAR model fitted by OLS, naive and mean benchmarks, and MSE and QLIKE
   losses. Trained on 2007-2016 and tested on 2017 onwards for all five ETFs.
   Summary below.
+
+## Estimators on real data (SPY)
+
+`notebooks/02_estimators.ipynb` compares the estimators on SPY over 2007-2026
+(average daily variance over the sample, annualized):
+
+| Estimator                       | Annualized volatility |
+|---------------------------------|-----------------------|
+| Close-to-close                  | 19.6%                 |
+| Parkinson + overnight           | 19.6%                 |
+| Garman-Klass + overnight        | 19.8%                 |
+| Garman-Klass, intraday only     | 15.9%                 |
+
+- The estimators that cover the full day agree closely on average.
+- About 37% of SPY's close-to-close variance comes from the overnight move
+  (close to next open), so intraday-only estimators understate volatility.
+- The 21-day volatility is computed as the square root of the average daily
+  variance, not the average of daily volatilities. By Jensen's inequality the
+  second is biased low, more so for noisier estimators.
 
 ## Estimator validation (Monte Carlo)
 
@@ -88,11 +107,12 @@ better.
 | USO    | 0.69            | 0.73              |
 
 - HAR beats the naive forecast on QLIKE for all five assets (0.64 to 0.84).
-- TLT is the exception on MSE. The loss is driven by March 2020, when realized
-  volatility jumped to 70-90% and HAR, whose slopes sum to about 3.5 and pull
-  the forecast toward the 2007-2016 average, forecast about 40-50%. 2020 is
-  the only test year where HAR loses to naive on MSE (1.34). Excluding it, the
-  ratio is 0.75.
+- TLT is the exception on MSE, and the loss comes from March 2020. 2020 is
+  the only test year where HAR loses to naive on MSE (1.34); excluding it, the
+  ratio is 0.75. TLT's slopes sum to about 3.5, so HAR pulls its forecast
+  toward the 2007-2016 average and reacts slowly to a sudden spike, which MSE
+  penalizes heavily. QLIKE measures errors relative to the volatility level, so
+  one extreme week weighs far less, and HAR still beats naive on QLIKE.
 - The monthly term carries most of the weight for every asset, and almost all
   of it for FXE (beta_m = 4.02 against 0.06 daily and 0.14 weekly). For SPY
   the coefficients imply a long-run volatility of about 21%.
@@ -105,10 +125,9 @@ better.
 4. [ ] GARCH-family models
 5. [ ] LightGBM model
 6. [ ] Daily live forecasting job
-
-## Results
-
-Coming soon.
+7. [ ] Simulation vs. reality: compare intraday Parkinson with the squared
+   open-to-close return per asset and year, and infer an effective sampling
+   frequency M from the Monte Carlo bias curve
 
 ## Setup
 
