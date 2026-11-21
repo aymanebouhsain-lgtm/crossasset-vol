@@ -109,10 +109,14 @@ better.
 - HAR beats the naive forecast on QLIKE for all five assets (0.64 to 0.84).
 - TLT is the exception on MSE, and the loss comes from March 2020. 2020 is
   the only test year where HAR loses to naive on MSE (1.34); excluding it, the
-  ratio is 0.75. TLT's slopes sum to about 3.5, so HAR pulls its forecast
-  toward the 2007-2016 average and reacts slowly to a sudden spike, which MSE
-  penalizes heavily. QLIKE measures errors relative to the volatility level, so
-  one extreme week weighs far less, and HAR still beats naive on QLIKE.
+  ratio is 0.75. In March 2020, TLT's volatility jumped to 89%. Just before the
+  peak, HAR forecast 20% and the naive forecast 31%. The naive forecast caught
+  up within a week, while HAR, which relies mostly on the monthly average,
+  peaked at 56% and stayed too high in April. MSE squares the errors, so these
+  few weeks dominate it. QLIKE measures errors relative to the volatility
+  level, so HAR still beats naive on QLIKE for TLT.
+
+  ![TLT, Feb-May 2020: realized vs forecast volatility](figures/tlt_2020_forecasts.png)
 - The monthly term carries most of the weight for every asset, and almost all
   of it for FXE (beta_m = 4.02 against 0.06 daily and 0.14 weekly). For SPY
   the coefficients imply a long-run volatility of about 21%.
