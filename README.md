@@ -38,6 +38,12 @@ adjusted for splits and dividends).
   `notebooks/03_monte_carlo.ipynb`): simulates daily OHLC bars from an intraday
   Brownian motion and measures the bias and efficiency of each estimator
   against the known true variance. Summary below.
+- **HAR-RV baseline** (`src/volforecast/features.py`, `models.py`,
+  `evaluate.py`, `notebooks/04_har.ipynb`): daily, weekly and monthly variance
+  features, a target equal to the sum of variance over the next 5 trading days,
+  the HAR model fitted by OLS, naive and mean benchmarks, and MSE and QLIKE
+  losses. Trained on 2007-2016 and tested on 2017 onwards for all five ETFs.
+  Summary below.
 
 ## Estimator validation (Monte Carlo)
 
@@ -63,10 +69,38 @@ be checked against it.
 On real data, prices are also observed at discrete trades, so range-based
 estimators will tend to understate volatility, more so for less liquid assets.
 
+## HAR-RV baseline (out of sample)
+
+The HAR model of Corsi (2009) regresses the sum of daily variance (Garman-Klass
+plus the overnight term) over the next 5 trading days on its daily, weekly and
+monthly averages. It is fitted by OLS on 2007-2016 and evaluated on 2017 to
+November 2026. The last 5 training rows are dropped, since their targets
+overlap the test period. The table shows HAR's loss divided by the loss of the
+naive forecast (next 5 days = last 5 days), so a value below 1 means HAR does
+better.
+
+| Ticker | HAR MSE / naive | HAR QLIKE / naive |
+|--------|-----------------|-------------------|
+| SPY    | 0.82            | 0.79              |
+| TLT    | 1.25            | 0.84              |
+| FXE    | 0.88            | 0.64              |
+| GLD    | 0.68            | 0.69              |
+| USO    | 0.69            | 0.73              |
+
+- HAR beats the naive forecast on QLIKE for all five assets (0.64 to 0.84).
+- TLT is the exception on MSE. The loss is driven by March 2020, when realized
+  volatility jumped to 70-90% and HAR, whose slopes sum to about 3.5 and pull
+  the forecast toward the 2007-2016 average, forecast about 40-50%. 2020 is
+  the only test year where HAR loses to naive on MSE (1.34). Excluding it, the
+  ratio is 0.75.
+- The monthly term carries most of the weight for every asset, and almost all
+  of it for FXE (beta_m = 4.02 against 0.06 daily and 0.14 weekly). For SPY
+  the coefficients imply a long-run volatility of about 21%.
+
 ## Roadmap
 
 1. [x] Monte Carlo validation of the estimators on simulated price paths
-2. [ ] HAR-RV baseline model
+2. [x] HAR-RV baseline model
 3. [ ] Walk-forward out-of-sample evaluation using the QLIKE loss
 4. [ ] GARCH-family models
 5. [ ] LightGBM model
@@ -97,8 +131,9 @@ ruff check .     # lint
 ruff format .    # format
 ```
 
-The test suite contains an import smoke test and Monte Carlo tests of the
-simulator and estimators (fixed seed). CI runs it on every push with
+The test suite contains an import smoke test, Monte Carlo tests of the
+simulator and estimators (fixed seed), and tests of the HAR features and
+target. CI runs it on every push with
 Python 3.12.
 
 ## Repository structure
@@ -111,14 +146,19 @@ crossasset-vol/
 │   ├── __init__.py
 │   ├── data.py             # download and load daily OHLCV data
 │   ├── estimators.py       # daily variance estimators and annualization
-│   └── simulate.py         # simulated OHLC bars for Monte Carlo tests
+│   ├── simulate.py         # simulated OHLC bars for Monte Carlo tests
+│   ├── features.py         # HAR features and 5-day target
+│   ├── models.py           # HAR, naive and mean models
+│   └── evaluate.py         # MSE and QLIKE losses
 ├── notebooks/
 │   ├── 01_explore.ipynb    # first look at the data
 │   ├── 02_estimators.ipynb # comparing estimators on SPY
-│   └── 03_monte_carlo.ipynb # Monte Carlo validation of the estimators
+│   ├── 03_monte_carlo.ipynb # Monte Carlo validation of the estimators
+│   └── 04_har.ipynb        # HAR-RV baseline on the five ETFs
 ├── tests/
 │   ├── test_smoke.py       # placeholder import test
-│   └── test_estimators.py  # Monte Carlo tests of simulator and estimators
+│   ├── test_estimators.py  # Monte Carlo tests of simulator and estimators
+│   └── test_features.py    # tests of HAR features, target and dataset
 ├── figures/                # figures saved by the notebooks
 ├── data/                   # Parquet files created by data.py (not tracked)
 ├── pyproject.toml          # pytest and ruff configuration

@@ -3,7 +3,10 @@ import pandas as pd
 
 
 def _check_inputs(y: pd.Series, y_hat: pd.Series, positive: bool = False) -> None:
-    """Raise if y and y_hat cover different dates, or (if positive) contain values <= 0."""
+    """Raise if y and y_hat cover different dates.
+
+    If `positive`, also raise if y or y_hat contain values <= 0.
+    """
     if not y.index.equals(y_hat.index):
         raise ValueError("y and y_hat must have the same dates")
     if positive:

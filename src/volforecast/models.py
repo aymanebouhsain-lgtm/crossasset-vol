@@ -19,7 +19,10 @@ class BaseModel(ABC):
 
 
 class HARModel(BaseModel):
-    """HAR-RV: y = beta_0 + beta_d * rv_d + beta_w * rv_w + beta_m * rv_m, fitted by OLS."""
+    """HAR-RV model, fitted by OLS.
+
+    y = beta_0 + beta_d * rv_d + beta_w * rv_w + beta_m * rv_m
+    """
 
     def fit(self, X: pd.DataFrame, y: pd.Series) -> "HARModel":
         Z = np.column_stack([np.ones(len(X)), X[FEATURES].to_numpy()])
@@ -34,7 +37,10 @@ class HARModel(BaseModel):
 
 
 class NaiveModel(BaseModel):
-    """Next `horizon` days' variance = the same as the last `horizon` days (horizon * rv_w)."""
+    """Next `horizon` days' variance = the same as the last `horizon` days.
+
+    The forecast is horizon * rv_w.
+    """
 
     def __init__(self, horizon: int = 5):
         self.horizon = horizon
